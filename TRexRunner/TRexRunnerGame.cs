@@ -1,15 +1,28 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace TRexRunner
 {
-    public class Game1 : Game
+    // ReSharper disable once InconsistentNaming
+    public class TRexRunnerGame : Game
     {
+        private const string ASSET_NAME_SPRITE_SHEET = "TrexSpriteSheet";
+        private const string ASSET_NAME_SFX_HIT = "hit";
+        private const string ASSET_NAME_SFX_SCORE_REACHED = "score-reached";
+        private const string ASSET_NAME_SFX_BUTTON_PRESS = "button-press";
+        
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        public Game1()
+        private SoundEffect _sfxHit;
+        private SoundEffect _sfxButtonPress;
+        private SoundEffect _sfxScoreReached;
+
+        private Texture2D _spriteSheetTexture;
+
+        public TRexRunnerGame()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -27,7 +40,10 @@ namespace TRexRunner
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            _sfxHit = Content.Load<SoundEffect>(ASSET_NAME_SFX_HIT);
+            _sfxButtonPress = Content.Load<SoundEffect>(ASSET_NAME_SFX_BUTTON_PRESS);
+            _sfxScoreReached = Content.Load<SoundEffect>(ASSET_NAME_SFX_SCORE_REACHED);
+            _spriteSheetTexture = Content.Load<Texture2D>(ASSET_NAME_SPRITE_SHEET);
         }
 
         protected override void Update(GameTime gameTime)
@@ -44,7 +60,11 @@ namespace TRexRunner
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            _spriteBatch.Begin();
+            
+            _spriteBatch.Draw(_spriteSheetTexture, new Vector2(10, 10), Color.White);
+            
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
