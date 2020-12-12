@@ -2,11 +2,11 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TRexRunner.Entities;
 using TRexRunner.Graphics;
 
 namespace TRexRunner
 {
-    // ReSharper disable once InconsistentNaming
     public class TRexRunnerGame : Game
     {
         private const string ASSET_NAME_SPRITE_SHEET = "TrexSpriteSheet";
@@ -22,6 +22,8 @@ namespace TRexRunner
         private SoundEffect _sfxScoreReached;
 
         private Texture2D _spriteSheetTexture;
+
+        private TRex _tRex;
 
         public TRexRunnerGame()
         {
@@ -45,6 +47,9 @@ namespace TRexRunner
             _sfxButtonPress = Content.Load<SoundEffect>(ASSET_NAME_SFX_BUTTON_PRESS);
             _sfxScoreReached = Content.Load<SoundEffect>(ASSET_NAME_SFX_SCORE_REACHED);
             _spriteSheetTexture = Content.Load<Texture2D>(ASSET_NAME_SPRITE_SHEET);
+            
+            // test purpose only
+            _tRex = new TRex(_spriteSheetTexture, new Vector2(20, 20));
         }
 
         protected override void Update(GameTime gameTime)
@@ -63,9 +68,7 @@ namespace TRexRunner
 
             _spriteBatch.Begin();
             
-            var tRexSprite = new Sprite(_spriteSheetTexture, 848, 0, 44, 52);
-            
-            tRexSprite.Draw(_spriteBatch, new Vector2(20, 20));
+            _tRex.Draw(_spriteBatch, gameTime);
             
             _spriteBatch.End();
 
