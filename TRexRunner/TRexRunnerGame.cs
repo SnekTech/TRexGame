@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TRexRunner.Entities;
 using TRexRunner.Graphics;
+using TRexRunner.System;
 
 namespace TRexRunner
 {
@@ -30,6 +31,7 @@ namespace TRexRunner
         private Texture2D _spriteSheetTexture;
 
         private TRex _tRex;
+        private InputController _inputController;
 
         public TRexRunnerGame()
         {
@@ -57,7 +59,11 @@ namespace TRexRunner
             _spriteSheetTexture = Content.Load<Texture2D>(ASSET_NAME_SPRITE_SHEET);
             
             // test purpose only
-            _tRex = new TRex(_spriteSheetTexture, new Vector2(TREX_START_POS_X, TREX_START_POS_Y - TRex.TREX_DEFAULT_SPRITE_HEIGHT));
+            _tRex = new TRex(_spriteSheetTexture,
+                new Vector2(TREX_START_POS_X,
+                    TREX_START_POS_Y - TRex.TREX_DEFAULT_SPRITE_HEIGHT),
+                _sfxButtonPress);
+            _inputController = new InputController(_tRex);
         }
 
         protected override void Update(GameTime gameTime)
@@ -66,6 +72,7 @@ namespace TRexRunner
                 Exit();
 
             _tRex.Update(gameTime);
+            _inputController.ProcessControls(gameTime);
 
             base.Update(gameTime);
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using TRexRunner.Graphics;
 
@@ -23,6 +24,8 @@ namespace TRexRunner.Entities
 
         private Sprite _idleSprite;
         private Sprite _idleBlinkSprite;
+
+        private SoundEffect _jumpSound;
         
         private SpriteAnimation _blinkAnimation;
 
@@ -38,7 +41,7 @@ namespace TRexRunner.Entities
         
         public int DrawOrder { get; set; }
 
-        public TRex(Texture2D spriteSheet, Vector2 position)
+        public TRex(Texture2D spriteSheet, Vector2 position, SoundEffect jumpSound)
         {
             Position = position;
             _idleBackgroundSprite = new Sprite(spriteSheet,
@@ -48,6 +51,7 @@ namespace TRexRunner.Entities
                 TREX_DEFAULT_SPRITE_HEIGHT);
             
             State = TRexState.Idle;
+            _jumpSound = jumpSound;
             
             _random = new Random();
             
@@ -100,6 +104,23 @@ namespace TRexRunner.Entities
             _blinkAnimation.AddFrame(_idleSprite, 0);
             _blinkAnimation.AddFrame(_idleBlinkSprite, (float)blinkTimeStamp);
             _blinkAnimation.AddFrame(_idleSprite, (float)blinkTimeStamp + BLINK_ANIMATION_EYE_CLOSE_TIME); // dummy end frame
+        }
+
+        public bool BeginJump()
+        {
+            if (State == TRexState.Jumping || State == TRexState.Falling)
+            {
+                return false;
+            }
+
+            _jumpSound.Play();
+            
+            return true;
+        }
+
+        public bool ContinueJump()
+        {
+            return true;
         }
     }
 }
