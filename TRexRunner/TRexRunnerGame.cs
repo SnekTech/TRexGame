@@ -13,6 +13,12 @@ namespace TRexRunner
         private const string ASSET_NAME_SFX_HIT = "hit";
         private const string ASSET_NAME_SFX_SCORE_REACHED = "score-reached";
         private const string ASSET_NAME_SFX_BUTTON_PRESS = "button-press";
+
+        public const int WINDOW_WIDTH = 600;
+        public const int WINDOW_HEIGHT = 150;
+
+        public const int TREX_START_POS_Y = WINDOW_HEIGHT - 16;
+        public const int TREX_START_POS_X = 1;
         
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -34,8 +40,10 @@ namespace TRexRunner
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
+            _graphics.PreferredBackBufferWidth = WINDOW_WIDTH;
+            _graphics.PreferredBackBufferHeight = WINDOW_HEIGHT;
+            _graphics.ApplyChanges();
+            
             base.Initialize();
         }
 
@@ -49,7 +57,7 @@ namespace TRexRunner
             _spriteSheetTexture = Content.Load<Texture2D>(ASSET_NAME_SPRITE_SHEET);
             
             // test purpose only
-            _tRex = new TRex(_spriteSheetTexture, new Vector2(20, 20));
+            _tRex = new TRex(_spriteSheetTexture, new Vector2(TREX_START_POS_X, TREX_START_POS_Y - TRex.TREX_DEFAULT_SPRITE_HEIGHT));
         }
 
         protected override void Update(GameTime gameTime)
@@ -57,14 +65,14 @@ namespace TRexRunner
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            _tRex.Update(gameTime);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.White);
 
             _spriteBatch.Begin();
             
