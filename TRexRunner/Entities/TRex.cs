@@ -66,6 +66,7 @@ namespace TRexRunner.Entities
                 TREX_DEFAULT_SPRITE_WIDTH,
                 TREX_DEFAULT_SPRITE_HEIGHT);
             
+            _blinkAnimation = new SpriteAnimation();
             CreateBlinkAnimation();
             _blinkAnimation.Play();
         }
@@ -94,10 +95,8 @@ namespace TRexRunner.Entities
 
         private void CreateBlinkAnimation()
         {
-            _blinkAnimation = new SpriteAnimation
-            {
-                ShouldLoop = false
-            };
+            _blinkAnimation.Clear();
+            _blinkAnimation.ShouldLoop = false;
 
             var blinkTimeStamp = BLINK_ANIMATION_RANDOM_MIN + _random.NextDouble() * (BLINK_ANIMATION_RANDOM_MAX - BLINK_ANIMATION_RANDOM_MIN);
             
