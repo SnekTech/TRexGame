@@ -26,10 +26,10 @@ namespace TRexRunner.System
                 {
                     _tRex.BeginJump();
                 }
-                else
-                {
-                    _tRex.ContinueJump();
-                }
+            }
+            else if (_tRex.State == TRexState.Jumping && !keyboardState.IsKeyDown(Keys.Up))
+            {
+                _tRex.CancelJump();
             }
 
             _previousKeyboardState = keyboardState; // struct, so memberwise copy

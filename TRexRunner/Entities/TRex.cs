@@ -8,6 +8,13 @@ namespace TRexRunner.Entities
 {
     public class TRex : IGameEntity
     {
+        private const float MIN_JUMP_HEIGHT = 40f;
+        
+        private const float GRAVITY = 1600f;
+        private const float JUMP_START_VELOCITY = -480f;
+
+        private const float CANCEL_JUMP_VELOCITY_DECREASE_FACTOR = 0.1f; 
+        
         private const int TREX_IDLE_BACKGROUND_SPRITE_POS_X = 40;
         private const int TREX_IDLE_BACKGROUND_SPRITE_POS_Y = 0;
         
@@ -30,6 +37,10 @@ namespace TRexRunner.Entities
         private SpriteAnimation _blinkAnimation;
 
         private Random _random;
+
+        private float _verticalVelocity;
+
+        private float _startPosY;
         
         public TRexState State { get; private set; }
 
@@ -69,6 +80,8 @@ namespace TRexRunner.Entities
             _blinkAnimation = new SpriteAnimation();
             CreateBlinkAnimation();
             _blinkAnimation.Play();
+
+            _startPosY = position.Y;
         }
      
         public void Update(GameTime gameTime)
@@ -82,6 +95,23 @@ namespace TRexRunner.Entities
                 }
                 _blinkAnimation.Update(gameTime);
             }
+            else if (State == TRexState.Jumping || State == TRexState.Falling)
+            {
+                Position = new Vector2(Position.X, Position.Y + _verticalVelocity * (float)gameTime.ElapsedGameTime.TotalSeconds);
+                _verticalVelocity += GRAVITY * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (_verticalVelocity >= 0)
+                {
+                    State = TRexState.Falling;
+                }
+                
+                if (Position.Y >= _startPosY)
+                {
+                    Position = new Vector2(Position.X, _startPosY);
+                    _verticalVelocity = 0;
+                    State = TRexState.Idle; // change to running later
+                }
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
@@ -90,6 +120,10 @@ namespace TRexRunner.Entities
             {
                 _idleBackgroundSprite.Draw(spriteBatch, Position);
                 _blinkAnimation.Draw(spriteBatch, Position);
+            }
+            else if (State == TRexState.Jumping || State == TRexState.Falling)
+            {
+                _idleSprite.Draw(spriteBatch, Position);
             }
         }
 
@@ -113,12 +147,21 @@ namespace TRexRunner.Entities
             }
 
             _jumpSound.Play();
+            State = TRexState.Jumping;
+            _verticalVelocity = JUMP_START_VELOCITY;
             
             return true;
         }
 
-        public bool ContinueJump()
+        public bool CancelJump()
         {
+            if (State != TRexState.Jumping || (_startPosY - Position.Y) < MIN_JUMP_HEIGHT)
+            {
+                return false;
+            }
+
+            State = TRexState.Falling;
+            _verticalVelocity *= CANCEL_JUMP_VELOCITY_DECREASE_FACTOR;
             return true;
         }
     }
