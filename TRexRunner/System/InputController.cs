@@ -31,6 +31,14 @@ namespace TRexRunner.System
             {
                 _tRex.CancelJump();
             }
+            else if (keyboardState.IsKeyDown(Keys.Down))
+            {
+                _tRex.Duck();
+            }
+            else if (_tRex.State == TRexState.Ducking & !keyboardState.IsKeyDown(Keys.Down))
+            {
+                _tRex.GetUp();
+            }
 
             _previousKeyboardState = keyboardState; // struct, so memberwise copy
         }

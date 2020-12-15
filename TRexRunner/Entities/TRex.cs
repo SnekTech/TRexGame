@@ -32,6 +32,11 @@ namespace TRexRunner.Entities
         private const int TREX_RUNNING_SPRITE_ONE_POS_X = TREX_DEFAULT_SPRITE_POS_X + TREX_DEFAULT_SPRITE_WIDTH * 2;
         private const int TREX_RUNNING_SPRITE_ONE_POS_Y = 0;
 
+        private const int TREX_DUCKING_SPRITE_WIDTH = 59;
+        
+        private const int TREX_DUCKING_SPRITE_ONE_POS_X = TREX_DEFAULT_SPRITE_POS_X + TREX_DEFAULT_SPRITE_WIDTH * 6;
+        private const int TREX_DUCKING_SPRITE_ONE_POS_Y = 0;
+
         private Sprite _idleBackgroundSprite;
 
         private Sprite _idleSprite;
@@ -40,6 +45,8 @@ namespace TRexRunner.Entities
         private SoundEffect _jumpSound;
         
         private SpriteAnimation _blinkAnimation;
+        private SpriteAnimation _runAnimation;
+        private SpriteAnimation _duckAnimation;
 
         private Random _random;
 
@@ -47,8 +54,6 @@ namespace TRexRunner.Entities
 
         private float _startPosY;
 
-        private SpriteAnimation _runAnimation;
-        
         public TRexState State { get; private set; }
 
         public Vector2 Position { get; set; }
@@ -99,6 +104,16 @@ namespace TRexRunner.Entities
             _runAnimation.AddFrame(runningSprite2, RUN_ANIMATION_FRAME_LENGTH);
             _runAnimation.AddFrame(runningSprite1, RUN_ANIMATION_FRAME_LENGTH * 2);
             _runAnimation.Play();
+            
+            _duckAnimation = new SpriteAnimation();
+            var duckingSprite1 = new Sprite(spriteSheet, TREX_DUCKING_SPRITE_ONE_POS_X, TREX_DUCKING_SPRITE_ONE_POS_Y,
+                TREX_DUCKING_SPRITE_WIDTH, TREX_DEFAULT_SPRITE_HEIGHT);
+            var duckingSprite2 = new Sprite(spriteSheet, TREX_DUCKING_SPRITE_ONE_POS_X + TREX_DUCKING_SPRITE_WIDTH, TREX_DUCKING_SPRITE_ONE_POS_Y,
+                TREX_DUCKING_SPRITE_WIDTH, TREX_DEFAULT_SPRITE_HEIGHT);
+            _duckAnimation.AddFrame(duckingSprite1, 0);
+            _duckAnimation.AddFrame(duckingSprite2, RUN_ANIMATION_FRAME_LENGTH);
+            _duckAnimation.AddFrame(duckingSprite1, RUN_ANIMATION_FRAME_LENGTH * 2);
+            _duckAnimation.Play();
         }
      
         public void Update(GameTime gameTime)
@@ -133,6 +148,10 @@ namespace TRexRunner.Entities
             {
                 _runAnimation.Update(gameTime);
             }
+            else if (State == TRexState.Ducking)
+            {
+                _duckAnimation.Update(gameTime);
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
@@ -149,6 +168,10 @@ namespace TRexRunner.Entities
             else if (State == TRexState.Running)
             {
                 _runAnimation.Draw(spriteBatch, Position);
+            }
+            else if (State == TRexState.Ducking)
+            {
+                _duckAnimation.Draw(spriteBatch, Position);
             }
         }
 
@@ -187,6 +210,29 @@ namespace TRexRunner.Entities
 
             State = TRexState.Falling;
             _verticalVelocity *= CANCEL_JUMP_VELOCITY_DECREASE_FACTOR;
+            return true;
+        }
+
+        public bool Duck()
+        {
+            if (State == TRexState.Jumping || State == TRexState.Falling)
+            {
+                return false;
+            }
+
+            State = TRexState.Ducking;
+
+            return true;
+        }
+
+        public bool GetUp()
+        {
+            if (State != TRexState.Ducking)
+            {
+                return false;
+            }
+
+            State = TRexState.Running;
             return true;
         }
     }
