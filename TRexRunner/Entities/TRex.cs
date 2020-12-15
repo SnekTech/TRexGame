@@ -8,6 +8,8 @@ namespace TRexRunner.Entities
 {
     public class TRex : IGameEntity
     {
+        private const float RUN_ANIMATION_FRAME_LENGTH = 0.1f;
+        
         private const float MIN_JUMP_HEIGHT = 40f;
         
         private const float GRAVITY = 1600f;
@@ -27,6 +29,9 @@ namespace TRexRunner.Entities
         private const float BLINK_ANIMATION_RANDOM_MAX = 10f;
         private const float BLINK_ANIMATION_EYE_CLOSE_TIME = 0.5f;
 
+        private const int TREX_RUNNING_SPRITE_ONE_POS_X = TREX_DEFAULT_SPRITE_POS_X + TREX_DEFAULT_SPRITE_WIDTH * 2;
+        private const int TREX_RUNNING_SPRITE_ONE_POS_Y = 0;
+
         private Sprite _idleBackgroundSprite;
 
         private Sprite _idleSprite;
@@ -41,6 +46,8 @@ namespace TRexRunner.Entities
         private float _verticalVelocity;
 
         private float _startPosY;
+
+        private SpriteAnimation _runAnimation;
         
         public TRexState State { get; private set; }
 
@@ -82,6 +89,16 @@ namespace TRexRunner.Entities
             _blinkAnimation.Play();
 
             _startPosY = position.Y;
+            
+            _runAnimation = new SpriteAnimation();
+            var runningSprite1 = new Sprite(spriteSheet, TREX_RUNNING_SPRITE_ONE_POS_X, TREX_RUNNING_SPRITE_ONE_POS_Y,
+                TREX_DEFAULT_SPRITE_WIDTH, TREX_DEFAULT_SPRITE_HEIGHT);
+            var runningSprite2 = new Sprite(spriteSheet, TREX_RUNNING_SPRITE_ONE_POS_X + TREX_DEFAULT_SPRITE_WIDTH, TREX_RUNNING_SPRITE_ONE_POS_Y,
+                TREX_DEFAULT_SPRITE_WIDTH, TREX_DEFAULT_SPRITE_HEIGHT);
+            _runAnimation.AddFrame(runningSprite1, 0);
+            _runAnimation.AddFrame(runningSprite2, RUN_ANIMATION_FRAME_LENGTH);
+            _runAnimation.AddFrame(runningSprite1, RUN_ANIMATION_FRAME_LENGTH * 2);
+            _runAnimation.Play();
         }
      
         public void Update(GameTime gameTime)
@@ -109,8 +126,12 @@ namespace TRexRunner.Entities
                 {
                     Position = new Vector2(Position.X, _startPosY);
                     _verticalVelocity = 0;
-                    State = TRexState.Idle; // change to running later
+                    State = TRexState.Running;
                 }
+            }
+            else if (State == TRexState.Running)
+            {
+                _runAnimation.Update(gameTime);
             }
         }
 
@@ -124,6 +145,10 @@ namespace TRexRunner.Entities
             else if (State == TRexState.Jumping || State == TRexState.Falling)
             {
                 _idleSprite.Draw(spriteBatch, Position);
+            }
+            else if (State == TRexState.Running)
+            {
+                _runAnimation.Draw(spriteBatch, Position);
             }
         }
 
