@@ -37,6 +37,8 @@ namespace TRexRunner.Entities
         private const int TREX_DUCKING_SPRITE_ONE_POS_X = TREX_DEFAULT_SPRITE_POS_X + TREX_DEFAULT_SPRITE_WIDTH * 6;
         private const int TREX_DUCKING_SPRITE_ONE_POS_Y = 0;
 
+        private const float DROP_VELOCITY = 600f;
+
         private Sprite _idleBackgroundSprite;
 
         private Sprite _idleSprite;
@@ -51,8 +53,8 @@ namespace TRexRunner.Entities
         private Random _random;
 
         private float _verticalVelocity;
-
         private float _startPosY;
+        private float _dropVelocity;
 
         public TRexState State { get; private set; }
 
@@ -129,7 +131,7 @@ namespace TRexRunner.Entities
             }
             else if (State == TRexState.Jumping || State == TRexState.Falling)
             {
-                Position = new Vector2(Position.X, Position.Y + _verticalVelocity * (float)gameTime.ElapsedGameTime.TotalSeconds);
+                Position = new Vector2(Position.X, Position.Y + (_verticalVelocity + _dropVelocity) * (float)gameTime.ElapsedGameTime.TotalSeconds);
                 _verticalVelocity += GRAVITY * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                 if (_verticalVelocity >= 0)
@@ -152,6 +154,8 @@ namespace TRexRunner.Entities
             {
                 _duckAnimation.Update(gameTime);
             }
+
+            _dropVelocity = 0;
         }
 
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
@@ -208,7 +212,6 @@ namespace TRexRunner.Entities
                 return false;
             }
 
-            State = TRexState.Falling;
             _verticalVelocity *= CANCEL_JUMP_VELOCITY_DECREASE_FACTOR;
             return true;
         }
@@ -233,6 +236,20 @@ namespace TRexRunner.Entities
             }
 
             State = TRexState.Running;
+            return true;
+        }
+
+        public bool Drop()
+        {
+            if (State != TRexState.Falling && State != TRexState.Jumping)
+            {
+                return false;
+            }
+
+            State = TRexState.Falling;
+
+            _dropVelocity = DROP_VELOCITY;
+
             return true;
         }
     }
