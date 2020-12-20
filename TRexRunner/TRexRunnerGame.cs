@@ -33,6 +33,8 @@ namespace TRexRunner
         private TRex _tRex;
         private InputController _inputController;
 
+        private GroundManager _groundManager;
+
         private EntityManager _entityManager;
 
         public TRexRunnerGame()
@@ -68,7 +70,13 @@ namespace TRexRunner
                 _sfxButtonPress);
             _inputController = new InputController(_tRex);
             
+            _groundManager = new GroundManager(_spriteSheetTexture, _entityManager, _tRex);
+            
             _entityManager.AddEntity(_tRex);
+            _entityManager.AddEntity(_groundManager);
+            
+            // testing purposes
+            _groundManager.Initialize();
         }
 
         protected override void Update(GameTime gameTime)
