@@ -33,11 +33,14 @@ namespace TRexRunner
         private TRex _tRex;
         private InputController _inputController;
 
+        private EntityManager _entityManager;
+
         public TRexRunnerGame()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            _entityManager = new EntityManager();
         }
 
         protected override void Initialize()
@@ -64,6 +67,8 @@ namespace TRexRunner
                     TREX_START_POS_Y - TRex.TREX_DEFAULT_SPRITE_HEIGHT),
                 _sfxButtonPress);
             _inputController = new InputController(_tRex);
+            
+            _entityManager.AddEntity(_tRex);
         }
 
         protected override void Update(GameTime gameTime)
@@ -71,8 +76,9 @@ namespace TRexRunner
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            _tRex.Update(gameTime);
             _inputController.ProcessControls(gameTime);
+            
+            _entityManager.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -83,7 +89,7 @@ namespace TRexRunner
 
             _spriteBatch.Begin();
             
-            _tRex.Draw(_spriteBatch, gameTime);
+            _entityManager.Draw(_spriteBatch, gameTime);
             
             _spriteBatch.End();
 
