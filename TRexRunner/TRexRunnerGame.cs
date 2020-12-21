@@ -1,9 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TRexRunner.Entities;
-using TRexRunner.Graphics;
 using TRexRunner.System;
 
 namespace TRexRunner
@@ -20,7 +20,8 @@ namespace TRexRunner
 
         public const int TREX_START_POS_Y = WINDOW_HEIGHT - 16;
         public const int TREX_START_POS_X = 1;
-        
+        public const float FADE_IN_ANIMATION_SPEED = 820f;
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
@@ -29,7 +30,10 @@ namespace TRexRunner
         private SoundEffect _sfxScoreReached;
 
         private Texture2D _spriteSheetTexture;
+        private Texture2D _fadeInTexture;
 
+        private float _fadeInTexturePosX;
+        
         private TRex _tRex;
         private InputController _inputController;
 
@@ -37,12 +41,18 @@ namespace TRexRunner
 
         private EntityManager _entityManager;
 
+        private KeyboardState _previousKeyboardState;
+        
+        public GameState State { get; private set; }
+
         public TRexRunnerGame()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             _entityManager = new EntityManager();
+            State = GameState.Initial;
+            _fadeInTexturePosX = TRex.TREX_DEFAULT_SPRITE_WIDTH;
         }
 
         protected override void Initialize()
@@ -63,11 +73,17 @@ namespace TRexRunner
             _sfxScoreReached = Content.Load<SoundEffect>(ASSET_NAME_SFX_SCORE_REACHED);
             _spriteSheetTexture = Content.Load<Texture2D>(ASSET_NAME_SPRITE_SHEET);
             
+            _fadeInTexture = new Texture2D(GraphicsDevice, 1, 1);
+            _fadeInTexture.SetData(new[] { Color.White });
+            
             // test purpose only
             _tRex = new TRex(_spriteSheetTexture,
                 new Vector2(TREX_START_POS_X,
                     TREX_START_POS_Y - TRex.TREX_DEFAULT_SPRITE_HEIGHT),
-                _sfxButtonPress);
+                _sfxButtonPress)
+            {
+                DrawOrder = 10
+            };
             _inputController = new InputController(_tRex);
             
             _groundManager = new GroundManager(_spriteSheetTexture, _entityManager, _tRex);
@@ -84,11 +100,31 @@ namespace TRexRunner
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            _inputController.ProcessControls(gameTime);
+            var keyboardState = Keyboard.GetState();
+
+            if (State == GameState.Playing)
+            {
+                _inputController.ProcessControls(gameTime);
+            }
+            else if (State == GameState.Transition)
+            {
+                _fadeInTexturePosX += (float)gameTime.ElapsedGameTime.TotalSeconds * FADE_IN_ANIMATION_SPEED;
+            }
+            else if (State == GameState.Initial)
+            {
+                var isStartKeyPressed = keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.Space);
+                var wasStartKeyPressed = _previousKeyboardState.IsKeyDown(Keys.Up) || _previousKeyboardState.IsKeyDown(Keys.Space);
+                if (isStartKeyPressed && !wasStartKeyPressed)
+                {
+                    StartGame();
+                }
+            }
             
             _entityManager.Update(gameTime);
 
-            base.Update(gameTime);
+            _previousKeyboardState = keyboardState;
+
+            // base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -98,10 +134,26 @@ namespace TRexRunner
             _spriteBatch.Begin();
             
             _entityManager.Draw(_spriteBatch, gameTime);
+
+            if (State == GameState.Initial || State == GameState.Transition)
+            {
+                _spriteBatch.Draw(_fadeInTexture, new Rectangle((int)Math.Round(_fadeInTexturePosX), 0, WINDOW_WIDTH, WINDOW_HEIGHT), Color.White);
+            }
             
             _spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private bool StartGame()
+        {
+            if (State != GameState.Initial)
+                return false;
+
+            State = GameState.Transition;
+            _tRex.BeginJump();
+
+            return true;
         }
     }
 }

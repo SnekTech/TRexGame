@@ -62,7 +62,7 @@ namespace TRexRunner.Entities
 
         public bool IsAlive { get; private set; }
 
-        public float Speed { get; private set; } = 50;
+        public float Speed { get; private set; } = 0;
         
         public int DrawOrder { get; set; }
 
