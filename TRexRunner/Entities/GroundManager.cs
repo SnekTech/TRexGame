@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TRexRunner.Graphics;
@@ -24,6 +26,8 @@ namespace TRexRunner.Entities
         private Sprite _bumpySprite;
 
         private TRex _tRex;
+
+        private Random _random;
         
         public int DrawOrder { get; set; }
 
@@ -37,13 +41,37 @@ namespace TRexRunner.Entities
             _bumpySprite = new Sprite(spriteSheet, SPRITE_POS_X + SPRITE_WIDTH, SPRITE_POS_Y, SPRITE_WIDTH, SPRITE_HEIGHT);
 
             _tRex = tRex;
+            _random = new Random();
         }
         
         public void Update(GameTime gameTime)
         {
+            if (_groundTiles.Any())
+            {
+                var maxPosX = _groundTiles.Max(g => g.PositionX);
+                if (maxPosX < 0)
+                {
+                    SpawnTile(maxPosX);
+                }
+            }
+            
+            var tilesToRemove = new List<GroundTile>();
+            
             foreach (var groundTile in _groundTiles)
             {
                 groundTile.PositionX -= _tRex.Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (groundTile.PositionX < -SPRITE_WIDTH)
+                {
+                    // completely off the screen
+                    _entityManager.RemoveEntity(groundTile);
+                    tilesToRemove.Add(groundTile);
+                }
+            }
+
+            foreach (var groundTile in tilesToRemove)
+            {
+                _groundTiles.Remove(groundTile);
             }
         }
 
@@ -72,6 +100,18 @@ namespace TRexRunner.Entities
             var groundTile = new GroundTile(positionX, GROUND_TILE_POS_Y, _bumpySprite);
 
             return groundTile;
+        }
+
+        private void SpawnTile(float maxPosX)
+        {
+            var randomNumber = _random.NextDouble();
+
+            var posX = maxPosX + SPRITE_WIDTH;
+
+            var groundTile = randomNumber > 0.5 ? CreateBumpyTile(posX) : CreateRegularTile(posX);
+            
+            _entityManager.AddEntity(groundTile);
+            _groundTiles.Add(groundTile);
         }
     }
 }
