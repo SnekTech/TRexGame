@@ -84,6 +84,8 @@ namespace TRexRunner
             {
                 DrawOrder = 10
             };
+            _tRex.JumpComplete += TRexOnJumpComplete;
+            
             _inputController = new InputController(_tRex);
             
             _groundManager = new GroundManager(_spriteSheetTexture, _entityManager, _tRex);
@@ -93,6 +95,15 @@ namespace TRexRunner
             
             // testing purposes
             _groundManager.Initialize();
+        }
+
+        private void TRexOnJumpComplete(object sender, EventArgs e)
+        {
+            if (State == GameState.Transition)
+            {
+                State = GameState.Playing;
+                _tRex.Initialize();
+            }
         }
 
         protected override void Update(GameTime gameTime)

@@ -8,6 +8,8 @@ namespace TRexRunner.Entities
 {
     public class TRex : IGameEntity
     {
+        private const float START_SPEED = 240f;
+        
         private const float RUN_ANIMATION_FRAME_LENGTH = 0.1f;
         
         private const float MIN_JUMP_HEIGHT = 40f;
@@ -55,6 +57,8 @@ namespace TRexRunner.Entities
         private float _verticalVelocity;
         private float _startPosY;
         private float _dropVelocity;
+
+        public event EventHandler JumpComplete;
 
         public TRexState State { get; private set; }
 
@@ -144,6 +148,8 @@ namespace TRexRunner.Entities
                     Position = new Vector2(Position.X, _startPosY);
                     _verticalVelocity = 0;
                     State = TRexState.Running;
+                    
+                    OnJumpComplete();
                 }
             }
             else if (State == TRexState.Running)
@@ -156,6 +162,12 @@ namespace TRexRunner.Entities
             }
 
             _dropVelocity = 0;
+        }
+
+        public void Initialize()
+        {
+            Speed = START_SPEED;
+            State = TRexState.Running;
         }
 
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
@@ -251,6 +263,12 @@ namespace TRexRunner.Entities
             _dropVelocity = DROP_VELOCITY;
 
             return true;
+        }
+
+        protected virtual void OnJumpComplete()
+        {
+            var handler = JumpComplete;
+            handler?.Invoke(this, EventArgs.Empty);
         }
     }
 }
